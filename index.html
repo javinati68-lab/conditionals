@@ -1,0 +1,1060 @@
+<!DOCTYPE html>
+<html lang="en" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mr. Rocha’s English Class: Conditionals</title>
+    
+    <!-- Fonts and Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] }
+                }
+            }
+        }
+    </script>
+    
+    <!-- Chart.js for Results -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        /* Base styles and transitions */
+        body { font-family: 'Inter', sans-serif; transition: background-color 0.3s, color 0.3s; }
+        
+        /* Mandatory Shiny Blue Border */
+        .shiny-input {
+            border: 2px solid #00aaff !important;
+            box-shadow: 0 0 8px #00aaff !important;
+            border-radius: 0.5rem;
+            padding: 0.75rem;
+            outline: none;
+            background-color: transparent;
+            transition: all 0.3s ease;
+        }
+        
+        /* State colors for inputs */
+        .correct-input { border-color: #22c55e !important; box-shadow: 0 0 10px #22c55e !important; background-color: rgba(34, 197, 94, 0.1) !important;}
+        .incorrect-input { border-color: #ef4444 !important; box-shadow: 0 0 10px #ef4444 !important; background-color: rgba(239, 68, 68, 0.1) !important;}
+        
+        /* Puzzle Styles */
+        #puzzle-container {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            grid-template-rows: repeat(4, 1fr);
+            width: 100%;
+            max-width: 600px;
+            aspect-ratio: 5/4;
+            margin: 0 auto;
+            border: 2px solid #00aaff;
+            box-shadow: 0 0 8px #00aaff;
+            touch-action: none;
+        }
+        .puzzle-piece {
+            width: 100%;
+            height: 100%;
+            background-image: url('Image3.jpg');
+            background-size: 500% 400%;
+            cursor: pointer;
+            box-sizing: border-box;
+            border: 1px solid rgba(255,255,255,0.2);
+            transition: transform 0.1s;
+        }
+        .puzzle-piece.selected {
+            transform: scale(0.9);
+            border: 2px solid #ffaa00;
+            box-shadow: 0 0 10px #ffaa00;
+            z-index: 10;
+        }
+
+        /* Scrambled Sentences Styles */
+        .word-chip {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            background: linear-gradient(135deg, #00aaff 0%, #0055ff 100%);
+            color: white;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            user-select: none;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            font-weight: 600;
+            transition: transform 0.2s, background 0.2s;
+        }
+        .word-chip:active { transform: translateY(2px); }
+        .word-chip.selected-word {
+            transform: scale(1.1);
+            background: linear-gradient(135deg, #ffaa00 0%, #ff5500 100%);
+            box-shadow: 0 0 12px #ffaa00;
+        }
+        .word-chip.locked {
+            background: #22c55e;
+            cursor: default;
+            pointer-events: none;
+        }
+
+        /* Print Styles */
+        @media print {
+            body { background: white !important; color: black !important; }
+            .no-print, nav, #progress-container, header button, .nav-btn, .check-btn { display: none !important; }
+            .section-container { display: block !important; margin-bottom: 2rem; page-break-inside: avoid; }
+            .shiny-input { box-shadow: none !important; border: 1px solid #ccc !important; }
+            #results-section { display: block !important; page-break-before: always; }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-900 dark:bg-gray-900 dark:text-gray-100 min-h-screen flex flex-col relative">
+
+    <!-- Header & Progress -->
+    <header class="fixed top-0 left-0 right-0 bg-white dark:bg-gray-800 shadow-md z-50 transition-colors duration-300">
+        <div class="max-w-5xl mx-auto px-4 py-3 flex justify-between items-center">
+            <h1 class="text-xl md:text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-teal-400">
+                Mr. Rocha’s English Class: Conditionals
+            </h1>
+            <button id="theme-toggle" class="p-2 rounded-full bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition" onclick="toggleTheme()" title="Toggle Dark/Light Mode">
+                💡
+            </button>
+        </div>
+        <div id="progress-container" class="w-full h-2 bg-gray-200 dark:bg-gray-700">
+            <div id="progress-bar" class="h-2 bg-gradient-to-r from-[#00aaff] to-[#0055ff] transition-all duration-500" style="width: 0%;"></div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-grow max-w-5xl mx-auto w-full px-4 pt-24 pb-24">
+        
+        <!-- Intro Section (Section 0) -->
+        <section id="section-0" class="section-container active space-y-6">
+            <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700">
+                <h2 class="text-2xl font-bold mb-4">Welcome!</h2>
+                <p class="mb-6 text-gray-600 dark:text-gray-400">Please enter your details below before starting the activities.</p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <div class="flex flex-col">
+                        <label for="student-name" class="font-semibold mb-2">Student Name:</label>
+                        <input type="text" id="student-name" class="shiny-input text-gray-900 dark:text-white" placeholder="Type your name here...">
+                    </div>
+                    <div class="flex flex-col">
+                        <label for="student-date" class="font-semibold mb-2">Date:</label>
+                        <input type="date" id="student-date" class="shiny-input text-gray-900 dark:text-white cursor-pointer">
+                    </div>
+                </div>
+                <div class="w-full flex justify-center">
+                    <!-- Image1 placeholder path -->
+                    <img src="Image1.jpg" alt="Class Introduction" class="max-w-full h-auto rounded-lg shadow-md border-4 border-gray-200 dark:border-gray-700" onerror="this.src='https://placehold.co/800x400/00aaff/ffffff?text=Image1.jpg+(Intro+Image)';">
+                </div>
+            </div>
+        </section>
+
+        <!-- Activity 1 -->
+        <section id="section-1" class="section-container hidden space-y-6">
+            <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg">
+                <h2 class="text-2xl font-bold mb-4 text-blue-600 dark:text-blue-400">Activity 1: Watch & Reflect</h2>
+                <p class="mb-4">Watch the video below. Tell Mr. Rocha about the video.</p>
+                <div class="w-full mb-6 bg-black rounded-lg overflow-hidden flex justify-center">
+                    <video src="Video1.mp4" controls class="w-full max-h-[500px]" poster="https://placehold.co/800x450/000000/ffffff?text=Video1.mp4">
+                        Your browser does not support the video tag.
+                    </video>
+                </div>
+                <label class="font-semibold mb-2 block">Your Answer:</label>
+                <textarea id="act1-answer" class="shiny-input w-full text-gray-900 dark:text-white bg-transparent" rows="4" placeholder="Write your thoughts here..."></textarea>
+                <div class="mt-4 flex flex-wrap gap-4 items-center">
+                    <button class="check-btn px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg shadow transition" onclick="checkAct(1)">Check Answer</button>
+                    <span id="act1-feedback" class="font-bold text-lg"></span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Activity 2 -->
+        <section id="section-2" class="section-container hidden space-y-6">
+            <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg">
+                <h2 class="text-2xl font-bold mb-4 text-blue-600 dark:text-blue-400">Activity 2: Read & Summarize</h2>
+                <p class="mb-4">Read the story below. Tell Mr. Rocha what it is about.</p>
+                <div class="w-full flex justify-center mb-6">
+                    <img src="Image2.jpg" alt="Story Image" class="max-w-full h-auto rounded-lg shadow-md" onerror="this.src='https://placehold.co/800x600/00aaff/ffffff?text=Image2.jpg+(Story)';">
+                </div>
+                <label class="font-semibold mb-2 block">Your Answer:</label>
+                <textarea id="act2-answer" class="shiny-input w-full text-gray-900 dark:text-white bg-transparent" rows="4" placeholder="Summarize the story..."></textarea>
+                <div class="mt-4 flex flex-wrap gap-4 items-center">
+                    <button class="check-btn px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg shadow transition" onclick="checkAct(2)">Check Answer</button>
+                    <span id="act2-feedback" class="font-bold text-lg"></span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Activity 3 -->
+        <section id="section-3" class="section-container hidden space-y-6">
+            <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg">
+                <h2 class="text-2xl font-bold mb-4 text-blue-600 dark:text-blue-400">Activity 3: Conditionals Practice</h2>
+                
+                <div class="bg-blue-50 dark:bg-blue-900/30 p-4 rounded-lg mb-6 border border-blue-200 dark:border-blue-800">
+                    <h3 class="text-xl font-bold mb-2">Grammar Guide: Conditionals</h3>
+                    <ul class="list-disc pl-5 space-y-2 text-sm">
+                        <li><strong>Zero Conditional (Fact):</strong> If + Present Simple, Present Simple. <em>(e.g., If you heat water, it boils.)</em></li>
+                        <li><strong>First Conditional (Possible Future):</strong> If + Present Simple, Will + Verb. <em>(e.g., If it rains, I will stay home.)</em></li>
+                        <li><strong>Second Conditional (Unreal Present/Future):</strong> If + Past Simple, Would + Verb. <em>(e.g., If I had money, I would travel.)</em></li>
+                        <li><strong>Third Conditional (Unreal Past):</strong> If + Past Perfect, Would have + Past Participle. <em>(e.g., If I had studied, I would have passed.)</em></li>
+                        <li><strong>Mixed Conditional:</strong> Mix of 2nd & 3rd. <em>(e.g., If I had slept earlier [past], I would not be tired now [present].)</em></li>
+                    </ul>
+                </div>
+
+                <p class="mb-4 font-semibold">Complete the 20 sentences by filling in the correct verb form.</p>
+                
+                <div id="act3-sentences" class="space-y-4 text-lg">
+                    <!-- Sentences will be injected by JS -->
+                </div>
+
+                <div class="mt-6 flex flex-wrap gap-4 items-center">
+                    <button class="check-btn px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg shadow transition" onclick="checkAct3()">Check Answers</button>
+                    <span id="act3-feedback" class="font-bold text-lg"></span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Activity 4 -->
+        <section id="section-4" class="section-container hidden space-y-6">
+            <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg">
+                <h2 class="text-2xl font-bold mb-4 text-blue-600 dark:text-blue-400">Activity 4: Listen and Write</h2>
+                <p class="mb-4 font-semibold">Listen to the audio files and write down the exact sentences you hear.</p>
+                
+                <div id="act4-container" class="space-y-6">
+                    <!-- Audio items will be injected by JS -->
+                </div>
+
+                <div class="mt-6 flex flex-wrap gap-4 items-center">
+                    <button class="check-btn px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg shadow transition" onclick="checkAct4()">Check Answers</button>
+                    <span id="act4-feedback" class="font-bold text-lg"></span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Activity 5 -->
+        <section id="section-5" class="section-container hidden space-y-6">
+            <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg">
+                <h2 class="text-2xl font-bold mb-4 text-blue-600 dark:text-blue-400">Activity 5: Image Puzzle</h2>
+                <div class="flex flex-col md:flex-row gap-6 mb-4 items-center">
+                    <div class="w-full md:w-1/3 flex flex-col items-center border p-2 rounded dark:border-gray-700">
+                        <p class="font-bold mb-2">Target Image</p>
+                        <img src="Image3.jpg" class="w-full max-w-[200px] h-auto rounded" onerror="this.src='https://placehold.co/500x400/00aaff/ffffff?text=Image3.jpg';">
+                    </div>
+                    <div class="w-full md:w-2/3">
+                        <p class="mb-2">Tap a puzzle piece to select it, then tap another piece to swap them. Solve the image!</p>
+                        <div class="flex gap-4 items-center mb-4">
+                            <span class="text-xl font-bold">Timer: <span id="puzzle-timer">00:00</span></span>
+                            <button class="px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-white font-bold rounded shadow transition" onclick="initPuzzle()">Do Again</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="puzzle-container"></div>
+                
+                <div class="mt-6 flex flex-wrap gap-4 items-center">
+                    <button class="check-btn px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg shadow transition" onclick="checkAct5()">Check Answer</button>
+                    <span id="act5-feedback" class="font-bold text-lg"></span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Activity 6 -->
+        <section id="section-6" class="section-container hidden space-y-6">
+            <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg">
+                <h2 class="text-2xl font-bold mb-4 text-blue-600 dark:text-blue-400">Activity 6: Listen, Read & Comprehend</h2>
+                <div class="mb-4">
+                    <audio src="Audio8.mp3" controls class="w-full">
+                        Your browser does not support the audio tag.
+                    </audio>
+                </div>
+                
+                <div class="h-64 overflow-y-auto p-4 bg-gray-100 dark:bg-gray-700 rounded-lg mb-6 border border-gray-300 dark:border-gray-600 text-sm leading-relaxed">
+                    <p class="mb-3">Recent technological advances have made an uncomfortable question increasingly urgent: does the ability to innovate justify the speed of deployment? Artificial intelligence, gene editing and quantum computing promise substantial benefits, yet their dangers cannot be assessed through technical performance alone. The central issue is whether institutions can distribute those benefits while remaining accountable for foreseeable harm.</p>
+                    <p class="mb-3">Generative AI can produce fluent explanations, realistic videos and computer code. Researchers also use it to analyse data and design experiments. However, impressive performance conceals uneven reliability: systems still invent information and struggle with extended tasks. Deepfakes create another danger, enabling fraud and impersonation. If persuasive output is mistaken for verified evidence, convenience may erode the judgement that responsible decisions require.</p>
+                    <p class="mb-3">Meanwhile, AI-assisted gene editing is improving researchers’ ability to predict unwanted changes and design more precise interventions. Such advances could support personalised treatments for genetic diseases. Nevertheless, prediction is not a guarantee. Unintended mutations, delivery difficulties and biased data remain obstacles. If promising therapies are deployed before these limitations are understood, vulnerable patients could bear risks that enthusiastic investors underestimate.</p>
+                    <p class="mb-3">Quantum computing raises a different timing problem. Although its most disruptive security consequences remain prospective, organisations already fear that encrypted information collected today could be decrypted later. Waiting for an unmistakable breakthrough would therefore confuse the arrival of a capability with the beginning of exposure. Preparing safer encryption is not necessarily alarmism; it can be prudent anticipation.</p>
+                    <p>These examples suggest that neither unrestricted acceleration nor blanket prohibition offers a convincing response. Instead, independent testing, proportionate safeguards and meaningful public scrutiny should accompany innovation. A technology may be beneficial in principle yet irresponsible in a particular setting. Genuine progress requires asking not merely whether a system works, but who benefits, who absorbs failure, and who can challenge its use.</p>
+                </div>
+
+                <p class="font-bold mb-4">Choose the most defensible answer to each question.</p>
+                
+                <div id="act6-questions" class="space-y-6">
+                    <!-- Injected by JS -->
+                </div>
+
+                <div class="mt-6 flex flex-wrap gap-4 items-center">
+                    <button class="check-btn px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg shadow transition" onclick="checkAct6()">Check Answers</button>
+                    <span id="act6-feedback" class="font-bold text-lg"></span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Activity 7 -->
+        <section id="section-7" class="section-container hidden space-y-6">
+            <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg">
+                <h2 class="text-2xl font-bold mb-4 text-blue-600 dark:text-blue-400">Activity 7: Sentence Builder</h2>
+                <p class="mb-4">Tap a word block to select it, then tap another to swap their positions. Form correct conditional sentences. Use the 🔊 button to hear the sentence aloud.</p>
+                
+                <div id="act7-sentences" class="space-y-6">
+                    <!-- Injected by JS -->
+                </div>
+
+                <div class="mt-6 flex flex-wrap gap-4 items-center">
+                    <button class="check-btn px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg shadow transition" onclick="checkAct7()">Check Answers</button>
+                    <span id="act7-feedback" class="font-bold text-lg"></span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Results Section -->
+        <section id="results-section" class="section-container hidden space-y-6 no-print-bg">
+            <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg border-t-8 border-blue-500">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-3xl font-bold text-blue-600 dark:text-blue-400">Final Results</h2>
+                    <button onclick="printResults()" class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded shadow transition">🖨️ Print Results</button>
+                </div>
+                
+                <div class="mb-6">
+                    <h3 class="text-xl font-bold" id="res-student-info"></h3>
+                    <p class="text-2xl font-black mt-2">Overall Score: <span id="res-overall-score" class="text-blue-500"></span>%</p>
+                </div>
+
+                <div class="w-full max-w-3xl mx-auto mb-8 bg-white p-4 rounded-lg shadow">
+                    <canvas id="resultsChart"></canvas>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg border border-gray-200 dark:border-gray-600">
+                        <h3 class="text-xl font-bold mb-3 border-b pb-2">General Feedback</h3>
+                        <p id="res-feedback" class="text-lg"></p>
+                    </div>
+                    
+                    <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg border border-gray-200 dark:border-gray-600">
+                        <h3 class="text-xl font-bold mb-3 border-b pb-2">8 Specific Recommendations</h3>
+                        <ol id="res-recommendations" class="list-decimal pl-5 space-y-2 text-sm font-medium"></ol>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Bottom Navigation -->
+    <footer id="bottom-nav" class="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] z-40 transition-colors duration-300">
+        <div class="max-w-5xl mx-auto px-4 py-3 flex justify-between items-center">
+            <button id="btn-back" class="nav-btn px-6 py-2 bg-gray-500 hover:bg-gray-600 text-white font-bold rounded-lg shadow transition disabled:opacity-50 disabled:cursor-not-allowed" onclick="navigate(-1)">
+                &larr; Back
+            </button>
+            <div id="section-indicator" class="font-bold text-gray-500 dark:text-gray-400 text-sm hidden md:block">Intro</div>
+            <button id="btn-next" class="nav-btn px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg shadow transition" onclick="navigate(1)">
+                Next &rarr;
+            </button>
+            <button id="btn-submit" class="nav-btn px-6 py-2 bg-green-600 hover:bg-green-700 text-white font-bold rounded-lg shadow transition hidden" onclick="showResults()">
+                Submit All ✔️
+            </button>
+        </div>
+    </footer>
+
+    <!-- JavaScript Logic -->
+    <script>
+        // Global State
+        let currentSection = 0;
+        const totalSections = 7; // 0 = Intro, 1-7 = Activities
+        const scores = { act1: 0, act2: 0, act3: 0, act4: 0, act5: 0, act6: 0, act7: 0 };
+        const checkedStatus = { act1: false, act2: false, act3: false, act4: false, act5: false, act6: false, act7: false };
+        let chartInstance = null;
+
+        // --- Data --- //
+        
+        // Activity 3: 20 Conditionals
+        const act3Data = [
+            { text: "1. If you freeze water, it _ (become) solid.", ans: ["becomes"] },
+            { text: "2. If babies are hungry, they _ (cry).", ans: ["cry"] },
+            { text: "3. If it rains tomorrow, we _ (stay) indoors.", ans: ["will stay"] },
+            { text: "4. She _ (pass) the exam if she studies hard.", ans: ["will pass"] },
+            { text: "5. If I _ (have) a million dollars, I would buy a yacht.", ans: ["had"] },
+            { text: "6. If he knew the answer, he _ (tell) us.", ans: ["would tell"] },
+            { text: "7. If she _ (study) harder, she would have passed.", ans: ["had studied"] },
+            { text: "8. If we had left earlier, we _ (catch) the bus.", ans: ["would have caught"] },
+            { text: "9. If I had slept earlier, I _ (not be) tired now.", ans: ["would not be", "wouldn't be"] },
+            { text: "10. If he were a better player, he _ (win) yesterday.", ans: ["would have won"] },
+            { text: "11. If you mix red and blue, you _ (get) purple.", ans: ["get"] },
+            { text: "12. Plants die if they _ (not get) water.", ans: ["do not get", "don't get"] },
+            { text: "13. I _ (call) you if I finish early tonight.", ans: ["will call"] },
+            { text: "14. If I _ (be) you, I would apologize.", ans: ["were", "was"] },
+            { text: "15. We would travel the world if we _ (be) rich.", ans: ["were"] },
+            { text: "16. If I _ (see) him, I would have said hello.", ans: ["had seen"] },
+            { text: "17. They _ (not lose) if they had played better.", ans: ["would not have lost", "wouldn't have lost"] },
+            { text: "18. If I _ (take) the job last year, I would live in NY now.", ans: ["had taken"] },
+            { text: "19. If you touch a fire, you _ (get) burned.", ans: ["get"] },
+            { text: "20. If I have free time, I _ (read) a book.", ans: ["will read"] }
+        ];
+
+        // Activity 4: Audios dictation answers
+        const act4Answers = [
+            "If you heat ice, it melts.",
+            "If it rains tomorrow, we will stay indoors.",
+            "If I had more free time, I would learn another language.",
+            "If she had studied harder, she would have passed the exam.",
+            "If we had left earlier, we would have caught the bus.",
+            "If I had gone to bed earlier last night, I would not be tired now.",
+            "If he were more careful, he would not have lost his keys yesterday."
+        ];
+
+        // Activity 6: Multiple Choice
+        const act6Data = [
+            {
+                q: "1. A hospital proposes using AI-generated treatment explanations without specialist review because the explanations sound convincing. Which evaluation best applies the passage’s argument?",
+                options: {
+                    A: "The proposal is defensible because clear communication addresses the principal risk identified in the passage.",
+                    B: "The proposal should be rejected because unreliable explanations demonstrate that AI has no legitimate medical applications.",
+                    C: "The proposal confuses persuasive presentation with dependable evidence; potential benefits do not remove the need for verification.",
+                    D: "The proposal is defensible if patients consent, since consent transfers responsibility for inaccurate explanations to patients."
+                },
+                ans: "C"
+            },
+            {
+                q: "2. Which comparison best explains why gene editing and quantum computing require different approaches to timing?",
+                options: {
+                    A: "Gene editing requires scrutiny before patients face uncertain interventions, while quantum security requires preparation before future decryption becomes possible.",
+                    B: "Gene editing requires waiting for certainty, while quantum security requires immediate abandonment of every encrypted system.",
+                    C: "Both require postponing safeguards until actual harm establishes which technical limitations matter.",
+                    D: "Both require accelerating deployment because earlier adoption necessarily reduces exposure to future harm."
+                },
+                ans: "A"
+            },
+            {
+                q: "3. A company claims that improved prediction of unintended genetic changes makes independent testing unnecessary. Which evidence would most strongly undermine its reasoning?",
+                options: {
+                    A: "Evidence that investors increasingly finance personalised medicine, demonstrating confidence in commercial applications.",
+                    B: "Evidence that predictive models generate results more quickly, making research procedures substantially more efficient.",
+                    C: "Evidence that patients favour innovative treatments, demonstrating demand despite acknowledged uncertainty.",
+                    D: "Evidence that favourable predictions coexist with harmful mutations and delivery failures, showing that model performance does not establish clinical safety."
+                },
+                ans: "D"
+            },
+            {
+                q: "4. A government can fund only one initial quantum-security measure. Which choice is most consistent with the passage’s reasoning?",
+                options: {
+                    A: "Launch a campaign reassuring citizens that future threats cannot affect information collected today.",
+                    B: "Prioritise replacing vulnerable encryption protecting information that must remain confidential for many years.",
+                    C: "Delay investment until a successful decryption attack supplies conclusive evidence of exposure.",
+                    D: "Prioritise publicity about computing breakthroughs because public awareness provides protection equivalent to encryption."
+                },
+                ans: "B"
+            },
+            {
+                q: "5. A regulator permits limited trials, requires independent evaluation and gives affected people a way to challenge deployment. Critics call this inconsistent because it both permits and restricts innovation. Which response best reflects the author’s position?",
+                options: {
+                    A: "The critics are correct because coherent regulation must choose between unrestricted use and complete prohibition.",
+                    B: "The criticism is misplaced because public participation should eventually replace technical evaluation.",
+                    C: "Permission and restriction can be complementary: controlled trials preserve potential benefits while safeguards address uncertainty and accountability.",
+                    D: "The criticism is misplaced because successful trials would eliminate the need for subsequent scrutiny."
+                },
+                ans: "C"
+            },
+            {
+                q: "6. Which conclusion most convincingly synthesises the three technological examples?",
+                options: {
+                    A: "Responsible progress requires evaluating how capabilities interact with exposure, uncertainty and accountability, rather than treating technical success as sufficient.",
+                    B: "Responsible progress requires prioritising speculative threats over demonstrated risks whenever a technology attracts investment.",
+                    C: "Responsible progress requires applying identical restrictions to all technologies so that regulation remains predictable.",
+                    D: "Responsible progress requires allowing adoption to determine acceptability, because widespread use demonstrates that benefits exceed harms."
+                },
+                ans: "A"
+            }
+        ];
+
+        // Activity 7: Scrambled sentences
+        const act7Data = [
+            "If you freeze water it becomes solid",
+            "If she calls I will answer",
+            "If I were you I would apologize",
+            "If it had rained we would have stayed home",
+            "If I had worked harder I would be rich now",
+            "If babies are hungry they cry",
+            "If you mix red and blue you get purple",
+            "We will go to the beach if it is sunny",
+            "If he had a car he would drive to work",
+            "She would have passed if she had studied"
+        ];
+
+        // --- Initialization --- //
+        document.addEventListener("DOMContentLoaded", () => {
+            renderAct3();
+            renderAct4();
+            initPuzzle();
+            renderAct6();
+            renderAct7();
+            updateNavigation();
+        });
+
+        // --- Theme Toggle --- //
+        function toggleTheme() {
+            document.documentElement.classList.toggle('dark');
+        }
+
+        // --- Navigation --- //
+        function navigate(dir) {
+            const sections = document.querySelectorAll('.section-container');
+            sections[currentSection].classList.add('hidden');
+            sections[currentSection].classList.remove('active');
+            
+            currentSection += dir;
+            if(currentSection < 0) currentSection = 0;
+            if(currentSection > totalSections) currentSection = totalSections;
+
+            sections[currentSection].classList.remove('hidden');
+            sections[currentSection].classList.add('active');
+            
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            updateNavigation();
+        }
+
+        function updateNavigation() {
+            document.getElementById('btn-back').disabled = currentSection === 0;
+            
+            if(currentSection === totalSections) {
+                document.getElementById('btn-next').classList.add('hidden');
+                document.getElementById('btn-submit').classList.remove('hidden');
+            } else {
+                document.getElementById('btn-next').classList.remove('hidden');
+                document.getElementById('btn-submit').classList.add('hidden');
+            }
+
+            const names = ["Intro", "Act 1: Video", "Act 2: Story", "Act 3: Grammar", "Act 4: Dictation", "Act 5: Puzzle", "Act 6: Reading", "Act 7: Scramble", "Results"];
+            document.getElementById('section-indicator').innerText = names[currentSection] || "";
+            
+            const progress = (currentSection / totalSections) * 100;
+            document.getElementById('progress-bar').style.width = `${progress}%`;
+        }
+
+        // --- Clean String Helper --- //
+        function cleanStr(str) {
+            return str.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g,"").trim().toLowerCase().replace(/\s{2,}/g," ");
+        }
+
+        // --- Check Answer Functions --- //
+        
+        function markCorrect(el, correctAnsText = null) {
+            el.classList.remove('shiny-input', 'incorrect-input');
+            el.classList.add('correct-input');
+            el.disabled = true;
+            if(correctAnsText && el.parentNode) {
+                if(!el.parentNode.querySelector('.ans-fb')) {
+                    const span = document.createElement('span');
+                    span.className = "ans-fb text-green-600 font-bold ml-2 text-sm";
+                    span.innerHTML = `✔️ ${correctAnsText}`;
+                    el.parentNode.appendChild(span);
+                }
+            }
+        }
+        function markIncorrect(el, correctAnsText) {
+            el.classList.remove('shiny-input', 'correct-input');
+            el.classList.add('incorrect-input');
+            el.disabled = true;
+            if(el.parentNode && !el.parentNode.querySelector('.ans-fb')) {
+                const span = document.createElement('span');
+                span.className = "ans-fb text-red-500 font-bold ml-2 text-sm";
+                span.innerHTML = `❌ Correct: ${correctAnsText}`;
+                el.parentNode.appendChild(span);
+            }
+        }
+
+        function checkAct(num) {
+            if(checkedStatus[`act${num}`]) return;
+            const val = document.getElementById(`act${num}-answer`).value.trim();
+            scores[`act${num}`] = val.length > 10 ? 100 : (val.length > 0 ? 50 : 0);
+            checkedStatus[`act${num}`] = true;
+            document.getElementById(`act${num}-answer`).disabled = true;
+            document.getElementById(`act${num}-answer`).classList.remove('shiny-input');
+            document.getElementById(`act${num}-answer`).classList.add('correct-input');
+            document.getElementById(`act${num}-feedback`).innerText = `Score: ${scores['act'+num]}%`;
+            document.getElementById(`act${num}-feedback`).className = "font-bold text-lg text-green-600";
+        }
+
+        // Activity 3
+        function renderAct3() {
+            const container = document.getElementById('act3-sentences');
+            act3Data.forEach((item, idx) => {
+                const parts = item.text.split('_');
+                const div = document.createElement('div');
+                div.className = "flex items-center flex-wrap gap-2";
+                div.innerHTML = `
+                    <span>${parts[0]}</span>
+                    <input type="text" id="act3-q${idx}" class="shiny-input w-40 text-sm text-center" placeholder="verb form">
+                    <span>${parts[1]}</span>
+                `;
+                container.appendChild(div);
+            });
+        }
+        function checkAct3() {
+            if(checkedStatus.act3) return;
+            let correct = 0;
+            act3Data.forEach((item, idx) => {
+                const el = document.getElementById(`act3-q${idx}`);
+                const val = cleanStr(el.value);
+                const isCorrect = item.ans.map(cleanStr).includes(val);
+                if(isCorrect) {
+                    correct++;
+                    markCorrect(el, item.ans[0]);
+                } else {
+                    markIncorrect(el, item.ans[0]);
+                }
+            });
+            scores.act3 = Math.round((correct / 20) * 100);
+            checkedStatus.act3 = true;
+            const fb = document.getElementById('act3-feedback');
+            fb.innerText = `Score: ${scores.act3}% (${correct}/20)`;
+            fb.className = `font-bold text-lg ${scores.act3 > 70 ? 'text-green-600' : 'text-orange-500'}`;
+        }
+
+        // Activity 4
+        function renderAct4() {
+            const container = document.getElementById('act4-container');
+            for(let i=1; i<=7; i++) {
+                const div = document.createElement('div');
+                div.className = "flex flex-col gap-2";
+                div.innerHTML = `
+                    <div class="flex items-center gap-4">
+                        <span class="font-bold text-lg">${i}.</span>
+                        <audio src="Audio${i}.mp3" controls class="h-10 w-64"></audio>
+                    </div>
+                    <div class="flex items-center">
+                        <input type="text" id="act4-q${i}" class="shiny-input w-full md:w-3/4 text-gray-900 dark:text-white" placeholder="Type exactly what you hear...">
+                    </div>
+                `;
+                container.appendChild(div);
+            }
+        }
+        function checkAct4() {
+            if(checkedStatus.act4) return;
+            let correct = 0;
+            act4Answers.forEach((ans, idx) => {
+                const el = document.getElementById(`act4-q${idx+1}`);
+                const val = cleanStr(el.value);
+                const target = cleanStr(ans);
+                if(val === target) {
+                    correct++;
+                    markCorrect(el, ans);
+                } else {
+                    markIncorrect(el, ans);
+                }
+            });
+            scores.act4 = Math.round((correct / 7) * 100);
+            checkedStatus.act4 = true;
+            const fb = document.getElementById('act4-feedback');
+            fb.innerText = `Score: ${scores.act4}% (${correct}/7)`;
+            fb.className = `font-bold text-lg ${scores.act4 > 70 ? 'text-green-600' : 'text-orange-500'}`;
+        }
+
+        // Activity 5 (Puzzle)
+        let puzzleTimerInterval;
+        let puzzleSeconds = 0;
+        let puzzleActive = false;
+        let selectedPiece = null;
+
+        function initPuzzle() {
+            clearInterval(puzzleTimerInterval);
+            puzzleSeconds = 0;
+            document.getElementById('puzzle-timer').innerText = "00:00";
+            puzzleActive = true;
+            selectedPiece = null;
+            checkedStatus.act5 = false;
+            document.getElementById('act5-feedback').innerText = "";
+            scores.act5 = 0;
+
+            const container = document.getElementById('puzzle-container');
+            container.innerHTML = '';
+            
+            const cols = 5;
+            const rows = 4;
+            const pieces = [];
+
+            for(let r=0; r<rows; r++){
+                for(let c=0; c<cols; c++){
+                    const index = r * cols + c;
+                    const piece = document.createElement('div');
+                    piece.className = 'puzzle-piece';
+                    piece.dataset.correctIndex = index;
+                    
+                    // Calculate background position
+                    const bgPosX = (c / (cols - 1)) * 100;
+                    const bgPosY = (r / (rows - 1)) * 100;
+                    piece.dataset.correctBg = `${bgPosX}% ${bgPosY}%`;
+                    piece.style.backgroundPosition = piece.dataset.correctBg;
+                    
+                    pieces.push({el: piece, id: index});
+                }
+            }
+
+            // Shuffle data internally
+            for (let i = pieces.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [pieces[i].el.style.backgroundPosition, pieces[j].el.style.backgroundPosition] = [pieces[j].el.style.backgroundPosition, pieces[i].el.style.backgroundPosition];
+                [pieces[i].el.dataset.correctIndex, pieces[j].el.dataset.correctIndex] = [pieces[j].el.dataset.correctIndex, pieces[i].el.dataset.correctIndex];
+            }
+
+            pieces.forEach((p, i) => {
+                p.el.dataset.currentIndex = i; // actual DOM slot
+                p.el.addEventListener('click', () => handlePuzzleClick(p.el));
+                container.appendChild(p.el);
+            });
+
+            // Start timer on first interaction
+            puzzleTimerInterval = setInterval(() => {
+                if(puzzleActive) {
+                    puzzleSeconds++;
+                    const m = String(Math.floor(puzzleSeconds / 60)).padStart(2, '0');
+                    const s = String(puzzleSeconds % 60).padStart(2, '0');
+                    document.getElementById('puzzle-timer').innerText = `${m}:${s}`;
+                }
+            }, 1000);
+        }
+
+        function handlePuzzleClick(el) {
+            if(!puzzleActive || checkedStatus.act5) return;
+            
+            if(!selectedPiece) {
+                selectedPiece = el;
+                el.classList.add('selected');
+            } else {
+                if(selectedPiece === el) {
+                    el.classList.remove('selected');
+                    selectedPiece = null;
+                    return;
+                }
+                
+                // Swap backgrounds and correct index data
+                const tempBg = selectedPiece.style.backgroundPosition;
+                const tempCorrectIdx = selectedPiece.dataset.correctIndex;
+                
+                selectedPiece.style.backgroundPosition = el.style.backgroundPosition;
+                selectedPiece.dataset.correctIndex = el.dataset.correctIndex;
+                
+                el.style.backgroundPosition = tempBg;
+                el.dataset.correctIndex = tempCorrectIdx;
+
+                selectedPiece.classList.remove('selected');
+                selectedPiece = null;
+            }
+        }
+
+        function checkAct5() {
+            if(checkedStatus.act5) return;
+            const container = document.getElementById('puzzle-container');
+            const pieces = container.querySelectorAll('.puzzle-piece');
+            let correct = 0;
+            pieces.forEach((p, idx) => {
+                if(parseInt(p.dataset.correctIndex) === idx) correct++;
+            });
+            scores.act5 = Math.round((correct / 20) * 100);
+            checkedStatus.act5 = true;
+            puzzleActive = false;
+            clearInterval(puzzleTimerInterval);
+            
+            const fb = document.getElementById('act5-feedback');
+            fb.innerText = `Score: ${scores.act5}% (${correct}/20 correct)`;
+            fb.className = `font-bold text-lg ${scores.act5 === 100 ? 'text-green-600' : 'text-orange-500'}`;
+            if(scores.act5 === 100) {
+                container.style.border = "4px solid #22c55e";
+                container.style.boxShadow = "0 0 15px #22c55e";
+            }
+        }
+
+        // Activity 6
+        function renderAct6() {
+            const container = document.getElementById('act6-questions');
+            act6Data.forEach((qObj, i) => {
+                let html = `<div class="mb-4"><p class="font-semibold mb-2">${qObj.q}</p><div class="flex flex-col gap-2 pl-4">`;
+                for(let opt in qObj.options) {
+                    html += `
+                        <label class="flex items-start gap-2 cursor-pointer p-2 rounded hover:bg-gray-200 dark:hover:bg-gray-600 transition">
+                            <input type="radio" name="act6-q${i}" value="${opt}" class="mt-1">
+                            <span><strong>${opt}.</strong> ${qObj.options[opt]}</span>
+                        </label>
+                    `;
+                }
+                html += `</div><div id="act6-fb-${i}" class="mt-2 text-sm font-bold"></div></div>`;
+                container.innerHTML += html;
+            });
+        }
+        function checkAct6() {
+            if(checkedStatus.act6) return;
+            let correct = 0;
+            act6Data.forEach((qObj, i) => {
+                const selected = document.querySelector(`input[name="act6-q${i}"]:checked`);
+                const fb = document.getElementById(`act6-fb-${i}`);
+                const radios = document.querySelectorAll(`input[name="act6-q${i}"]`);
+                radios.forEach(r => r.disabled = true);
+                
+                if(selected) {
+                    if(selected.value === qObj.ans) {
+                        correct++;
+                        fb.innerText = `✔️ Correct!`;
+                        fb.className = "mt-2 text-sm font-bold text-green-600";
+                    } else {
+                        fb.innerText = `❌ Incorrect. Correct answer: ${qObj.ans}`;
+                        fb.className = "mt-2 text-sm font-bold text-red-500";
+                    }
+                } else {
+                    fb.innerText = `❌ Missed. Correct answer: ${qObj.ans}`;
+                    fb.className = "mt-2 text-sm font-bold text-red-500";
+                }
+            });
+            scores.act6 = Math.round((correct / 6) * 100);
+            checkedStatus.act6 = true;
+            const msg = document.getElementById('act6-feedback');
+            msg.innerText = `Score: ${scores.act6}% (${correct}/6)`;
+            msg.className = `font-bold text-lg ${scores.act6 > 70 ? 'text-green-600' : 'text-orange-500'}`;
+        }
+
+        // Activity 7
+        let selectedWordChip = null;
+        function renderAct7() {
+            const container = document.getElementById('act7-sentences');
+            act7Data.forEach((sentence, sIdx) => {
+                const words = sentence.split(" ");
+                // Shuffle words
+                let shuffled = [...words];
+                for(let i = shuffled.length-1; i>0; i--){
+                    const j = Math.floor(Math.random()*(i+1));
+                    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+                }
+
+                const div = document.createElement('div');
+                div.className = "flex items-center gap-3 flex-wrap bg-gray-100 dark:bg-gray-700 p-3 rounded-lg";
+                
+                const btn = document.createElement('button');
+                btn.className = "w-10 h-10 rounded-full bg-blue-500 hover:bg-blue-600 text-white flex items-center justify-center shadow";
+                btn.innerText = "🔊";
+                btn.title = "Listen to correct sentence";
+                btn.onclick = () => speakText(sentence);
+                div.appendChild(btn);
+
+                const chipsDiv = document.createElement('div');
+                chipsDiv.className = "flex flex-wrap gap-2 act7-chips-container";
+                chipsDiv.dataset.sIdx = sIdx;
+                
+                shuffled.forEach((w, wIdx) => {
+                    const span = document.createElement('span');
+                    span.className = "word-chip";
+                    span.innerText = w;
+                    span.dataset.word = w;
+                    span.onclick = () => handleWordClick(span);
+                    chipsDiv.appendChild(span);
+                });
+
+                div.appendChild(chipsDiv);
+                
+                const fbSpan = document.createElement('span');
+                fbSpan.id = `act7-fb-${sIdx}`;
+                div.appendChild(fbSpan);
+
+                container.appendChild(div);
+            });
+        }
+
+        function handleWordClick(el) {
+            if(checkedStatus.act7) return;
+            if(!selectedWordChip) {
+                selectedWordChip = el;
+                el.classList.add('selected-word');
+            } else {
+                if(selectedWordChip === el) {
+                    el.classList.remove('selected-word');
+                    selectedWordChip = null;
+                    return;
+                }
+                if(selectedWordChip.parentNode !== el.parentNode) {
+                    // Prevent swapping words across different sentences
+                    selectedWordChip.classList.remove('selected-word');
+                    selectedWordChip = el;
+                    el.classList.add('selected-word');
+                    return;
+                }
+
+                // Swap Text and data-word
+                const temp = selectedWordChip.innerText;
+                selectedWordChip.innerText = el.innerText;
+                selectedWordChip.dataset.word = el.innerText;
+                el.innerText = temp;
+                el.dataset.word = temp;
+
+                selectedWordChip.classList.remove('selected-word');
+                selectedWordChip = null;
+            }
+        }
+
+        function checkAct7() {
+            if(checkedStatus.act7) return;
+            let correct = 0;
+            const containers = document.querySelectorAll('.act7-chips-container');
+            containers.forEach((cont, idx) => {
+                const chips = cont.querySelectorAll('.word-chip');
+                let userStr = Array.from(chips).map(c => c.innerText).join(" ");
+                const target = act7Data[idx];
+                const fb = document.getElementById(`act7-fb-${idx}`);
+                
+                chips.forEach(c => {
+                    c.classList.add('locked');
+                    c.onclick = null;
+                });
+
+                if(cleanStr(userStr) === cleanStr(target)) {
+                    correct++;
+                    fb.innerHTML = "✔️";
+                    fb.className = "text-green-600 font-bold ml-2";
+                } else {
+                    fb.innerHTML = `❌ <br><span class="text-sm text-gray-600 dark:text-gray-300">Target: ${target}</span>`;
+                    fb.className = "text-red-500 font-bold ml-2";
+                    chips.forEach(c => c.style.background = "#ef4444");
+                }
+            });
+            scores.act7 = Math.round((correct / 10) * 100);
+            checkedStatus.act7 = true;
+            const msg = document.getElementById('act7-feedback');
+            msg.innerText = `Score: ${scores.act7}% (${correct}/10)`;
+            msg.className = `font-bold text-lg ${scores.act7 > 70 ? 'text-green-600' : 'text-orange-500'}`;
+        }
+
+        // Web Speech API
+        function speakText(text) {
+            if ('speechSynthesis' in window) {
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'en-US';
+                utterance.rate = 0.9;
+                window.speechSynthesis.cancel(); // stop current
+                window.speechSynthesis.speak(utterance);
+            } else {
+                alert("Text-to-speech not supported in this browser.");
+            }
+        }
+
+        // --- Results Logic --- //
+        function showResults() {
+            // Auto check missed activities with 0
+            for(let i=1; i<=7; i++){
+                if(!checkedStatus[`act${i}`]) {
+                    window[`checkAct${i < 3 ? '' : (i===3?'3':(i===4?'4':(i===5?'5':(i===6?'6':'7'))))}`] && window[`checkAct${i===1||i===2 ? '' : i}`] ? (i===1||i===2 ? checkAct(i) : window[`checkAct${i}`]()) : null;
+                }
+            }
+
+            const name = document.getElementById('student-name').value || "Student";
+            const date = document.getElementById('student-date').value || "No Date provided";
+            document.getElementById('res-student-info').innerText = `${name} | ${date}`;
+
+            const totalScore = Math.round((scores.act1 + scores.act2 + scores.act3 + scores.act4 + scores.act5 + scores.act6 + scores.act7) / 7);
+            document.getElementById('res-overall-score').innerText = totalScore;
+            
+            // Feedback logic
+            let fbText = "";
+            if(totalScore >= 90) fbText = "Outstanding job! You have a firm grasp of conditionals and reading comprehension.";
+            else if(totalScore >= 75) fbText = "Great work! You understand most concepts, but reviewing a few specific areas will make you perfect.";
+            else if(totalScore >= 50) fbText = "Good effort! You are getting there. Focus on the recommendations below to improve your skills.";
+            else fbText = "Keep practicing! Conditionals can be tricky. Don't give up, review the grammar guide and try again.";
+            document.getElementById('res-feedback').innerText = fbText;
+
+            // Recommendations logic
+            const recs = [];
+            if(scores.act1 < 100 || scores.act2 < 100) recs.push("Practice expressing your thoughts more elaborately in writing tasks.");
+            if(scores.act3 < 80) recs.push("Review the structure of Zero and First Conditionals for factual and probable scenarios.");
+            if(scores.act3 < 60) recs.push("Study Second and Third Conditionals carefully to differentiate between present unreal and past unreal situations.");
+            if(scores.act4 < 80) recs.push("Improve listening accuracy by pausing audio after each sentence and repeating it aloud before writing.");
+            if(scores.act4 < 60) recs.push("Practice spelling and punctuation in dictation exercises.");
+            if(scores.act5 < 100) recs.push("Enhance visual-spatial reasoning with more puzzle activities.");
+            if(scores.act6 < 80) recs.push("Work on reading comprehension by highlighting key details in complex texts.");
+            if(scores.act6 < 60) recs.push("Analyze multiple-choice options carefully to eliminate distractors in advanced readings.");
+            if(scores.act7 < 80) recs.push("Practice sentence syntax by rearranging words to form coherent conditional statements.");
+            if(scores.act7 < 60) recs.push("Listen to spoken English frequently to naturally internalize word order.");
+
+            // Ensure exactly 8 recommendations (pad or slice)
+            const defaultRecs = [
+                "Read English articles daily to build vocabulary.",
+                "Speak with peers using 'If... then...' scenarios.",
+                "Write a short journal entry using mixed conditionals.",
+                "Listen to English podcasts to adapt to different accents.",
+                "Use language learning apps for quick daily reviews."
+            ];
+            while(recs.length < 8) {
+                recs.push(defaultRecs.pop() || "Keep reviewing your class notes regularly.");
+            }
+            const finalRecs = recs.slice(0, 8);
+            
+            const recContainer = document.getElementById('res-recommendations');
+            recContainer.innerHTML = "";
+            finalRecs.forEach(r => {
+                recContainer.innerHTML += `<li>${r}</li>`;
+            });
+
+            // Navigate to Results Section
+            const sections = document.querySelectorAll('.section-container');
+            sections.forEach(s => { s.classList.add('hidden'); s.classList.remove('active'); });
+            document.getElementById('results-section').classList.remove('hidden');
+            document.getElementById('results-section').classList.add('active');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            
+            // Hide bottom nav entirely on results
+            document.getElementById('bottom-nav').style.display = 'none';
+            document.getElementById('progress-container').style.display = 'none';
+
+            renderChart();
+        }
+
+        function renderChart() {
+            const ctx = document.getElementById('resultsChart').getContext('2d');
+            if(chartInstance) chartInstance.destroy();
+
+            chartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Act 1: Video', 'Act 2: Story', 'Act 3: Grammar', 'Act 4: Audio', 'Act 5: Puzzle', 'Act 6: Reading', 'Act 7: Scramble'],
+                    datasets: [{
+                        label: 'Score %',
+                        data: [scores.act1, scores.act2, scores.act3, scores.act4, scores.act5, scores.act6, scores.act7],
+                        backgroundColor: [
+                            'rgba(255, 99, 132, 0.7)',
+                            'rgba(54, 162, 235, 0.7)',
+                            'rgba(255, 206, 86, 0.7)',
+                            'rgba(75, 192, 192, 0.7)',
+                            'rgba(153, 102, 255, 0.7)',
+                            'rgba(255, 159, 64, 0.7)',
+                            'rgba(199, 199, 199, 0.7)'
+                        ],
+                        borderColor: [
+                            'rgba(255, 99, 132, 1)',
+                            'rgba(54, 162, 235, 1)',
+                            'rgba(255, 206, 86, 1)',
+                            'rgba(75, 192, 192, 1)',
+                            'rgba(153, 102, 255, 1)',
+                            'rgba(255, 159, 64, 1)',
+                            'rgba(159, 159, 159, 1)'
+                        ],
+                        borderWidth: 2,
+                        borderRadius: 5
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { display: false },
+                        title: { display: true, text: 'Performance per Activity', font: {size: 18} }
+                    },
+                    scales: {
+                        y: { beginAtZero: true, max: 100 }
+                    }
+                }
+            });
+        }
+
+        function printResults() {
+            window.scrollTo(0, 0);
+            setTimeout(() => {
+                window.print();
+            }, 100);
+        }
+
+    </script>
+</body>
+</html>
